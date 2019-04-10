@@ -121,16 +121,15 @@ void test() {
 	const unsigned int HEIGHT = 144;
 	const unsigned int FRAME_SIZE = (WIDTH * HEIGHT * 3 / 2);
 
-	/*fseek(file, 0L, SEEK_END);
+	fseek(file, 0L, SEEK_END);
 	const unsigned int FRAME_NUMBER = ftell(file) / FRAME_SIZE;
-	fseek(file, 0L, SEEK_SET);*/
-	const unsigned int FRAME_NUMBER = 300;
+	fseek(file, 0L, SEEK_SET);
 	
 	for (int i = 0; i < FRAME_NUMBER; i++) {
 		BYTE farme_data[FRAME_SIZE];
 		size_t len = fread(farme_data, FRAME_SIZE, 1, file);
  		yuToRGB(farme_data, (BYTE*)(farme_data + WIDTH * HEIGHT), (BYTE*)(farme_data + WIDTH * HEIGHT * 5 / 4) , WIDTH, HEIGHT);
-		printf("index = %d %d\n", i, ftell(file));
+		printf("index = %d %d\n", i, len);
 	}
 	fclose(file);
 }
