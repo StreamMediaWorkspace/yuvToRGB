@@ -111,25 +111,26 @@ void yuToRGB(const BYTE *yData, const BYTE *uData, const BYTE *vData, const int 
 }
 
 void test() {
-	FILE *file = fopen("./176_144.yuv", "r");
+	FILE *file = fopen("./176_144.yuv", "rb");
 	if (file == NULL) {
 		printf("open file failed!!!\n");
 		return;
 	}
 
-	const int WIDTH = 176;
-	const int HEIGHT = 144;
-	const int FRAME_SIZE = (WIDTH * HEIGHT * 3 / 2);
+	const unsigned int WIDTH = 176;
+	const unsigned int HEIGHT = 144;
+	const unsigned int FRAME_SIZE = (WIDTH * HEIGHT * 3 / 2);
 
-	fseek(file, 0L, SEEK_END);
-	const int FRAME_NUMBER = ftell(file) / FRAME_SIZE;
-	fseek(file, 0L, SEEK_SET);
+	/*fseek(file, 0L, SEEK_END);
+	const unsigned int FRAME_NUMBER = ftell(file) / FRAME_SIZE;
+	fseek(file, 0L, SEEK_SET);*/
+	const unsigned int FRAME_NUMBER = 300;
 	
 	for (int i = 0; i < FRAME_NUMBER; i++) {
 		BYTE farme_data[FRAME_SIZE];
-		size_t len = fread(farme_data, 1, FRAME_SIZE, file);
+		size_t len = fread(farme_data, FRAME_SIZE, 1, file);
  		yuToRGB(farme_data, (BYTE*)(farme_data + WIDTH * HEIGHT), (BYTE*)(farme_data + WIDTH * HEIGHT * 5 / 4) , WIDTH, HEIGHT);
-		printf("index = %d %d\n", i, len);
+		printf("index = %d %d\n", i, ftell(file));
 	}
 	fclose(file);
 }
