@@ -111,7 +111,7 @@ void yuv420planarToRGB(const BYTE *yData, const BYTE *uData, const BYTE *vData, 
 }
 
 void yuv420planarFileToRGB32Image() {
-	FILE *file = fopen("./176_144_420.yuv", "rb");
+	FILE *file = fopen("./176_144_420planar.yuv", "rb");
 	if (file == NULL) {
 		printf("open file failed!!!\n");
 		return;
@@ -133,8 +133,7 @@ void yuv420planarFileToRGB32Image() {
 	}
 	fclose(file);
 }
-
-
+/////////////////////////
 void yuv422planarToRGB(const BYTE *yData, const BYTE *uData, const BYTE *vData,
 	const int width, const int height) {
 	BYTE *rgb24Data = new BYTE[width*height * 3];
@@ -142,8 +141,8 @@ void yuv422planarToRGB(const BYTE *yData, const BYTE *uData, const BYTE *vData,
 	for (int i = 0; i < height; i++) {
 		for (int j = 0; j < width; j++) {
 			BYTE y = yData[i*width + j];
-			BYTE u = uData[i*(width / 2) + j / 2];
-			BYTE v = vData[i*(width / 2) + j / 2];
+			BYTE u = uData[i * (width / 2 ) + j / 2];
+			BYTE v = vData[i * (width / 2) + j / 2];
 
 			int data = (int)(y + 1.772 * (u - 128));//b分量
 			rgb24Data[index] = ((data < 0) ? 0 : (data > 255 ? 255 : data));
@@ -185,10 +184,61 @@ void yuv422planarFileToRGB32Image() {
 	}
 	fclose(file);
 }
+/////////////////////////
+void yuv444planarToRGB(const BYTE *yData, const BYTE *uData, const BYTE *vData,
+	const int width, const int height) {
+	BYTE *rgb24Data = new BYTE[width * height * 3];
+	int index = 0;
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			BYTE y = yData[i * width + j];
+			BYTE u = uData[i * width + j];
+			BYTE v = vData[i * width + j];
 
+			int data = (int)(y + 1.772 * (u - 128));//b分量
+			rgb24Data[index] = ((data < 0) ? 0 : (data > 255 ? 255 : data));
+
+			data = (int)(y - 0.34414 * (u - 128) - 0.71414 * (v - 128));//g分量
+			rgb24Data[index + 1] = ((data < 0) ? 0 : (data > 255 ? 255 : data));
+
+			data = (int)(y + 1.402 * (v - 128));//r分量
+			rgb24Data[index + 2] = ((data < 0) ? 0 : (data > 255 ? 255 : data));
+			index += 3;
+		}
+	}
+	static int id = 0;
+	SaveDIB2Bmp(id++, "./test", "./image", width, height, (BYTE*)rgb24Data);
+	delete[] rgb24Data;
+}
+
+void yuv444planarFileToRGB32Image() {
+	FILE *file = fopen("./176_144_tulips_yuv444_inter_planar_qcif.yuv", "rb");
+	if (file == NULL) {
+		printf("open file failed!!!\n");
+		return;
+	}
+
+	const unsigned int WIDTH = 176;
+	const unsigned int HEIGHT = 144;
+	const unsigned int FRAME_SIZE = (WIDTH * HEIGHT * 3);
+
+	fseek(file, 0L, SEEK_END);
+	const unsigned int FRAME_NUMBER = ftell(file) / FRAME_SIZE;
+	fseek(file, 0L, SEEK_SET);
+
+	for (int i = 0; i < FRAME_NUMBER; i++) {
+		BYTE farme_data[FRAME_SIZE];
+		size_t len = fread(farme_data, FRAME_SIZE, 1, file);
+		yuv444planarToRGB(farme_data, (BYTE*)(farme_data + WIDTH * HEIGHT),
+			(BYTE*)(farme_data + WIDTH * HEIGHT * 2), WIDTH, HEIGHT);
+		printf("index = %d %d\n", i, len);
+	}
+	fclose(file);
+}
 int main() {
 	//yuv420planarFileToRGB32Image();
-	yuv422planarFileToRGB32Image();
+	//yuv422planarFileToRGB32Image();
+	yuv444planarFileToRGB32Image();
 	system("pause");
 	return 0;
 }
